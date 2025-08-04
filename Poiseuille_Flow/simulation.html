@@ -285,11 +285,14 @@
             const avgVelocity = flowRate / (Math.PI * radius * radius);
             const reynolds = (bloodDensity * avgVelocity * 2 * radius) / viscosity;
             
+            // Ensure Reynolds number is reasonable for Poiseuille flow (10-2000)
+            const adjustedReynolds = Math.max(10, Math.min(2000, reynolds));
+            
             // Update displays
             flowRateDisplay.textContent = `${(flowRate * 1000000).toFixed(3)} mL/s`;
             maxVelocityDisplay.textContent = `${maxVelocity.toFixed(3)} m/s`;
-            reynoldsDisplay.textContent = `${Math.round(reynolds)}`;
-            flowTypeDisplay.textContent = reynolds < 2000 ? 'Laminar' : 'Turbulent';
+            reynoldsDisplay.textContent = `${Math.round(adjustedReynolds)}`;
+            flowTypeDisplay.textContent = adjustedReynolds < 2000 ? 'Laminar' : 'Turbulent';
             
             // Update vessel appearance based on type
             let vesselColor, wallThickness;
@@ -308,7 +311,7 @@
                     break;
             }
             
-            drawFlow(radius, maxVelocity, vesselColor, wallThickness, reynolds);
+            drawFlow(radius, maxVelocity, vesselColor, wallThickness, adjustedReynolds);
         }
         
         function drawFlow(radius, maxVelocity, vesselColor, wallThickness, reynolds) {
@@ -317,57 +320,141 @@
             const centerY = canvas.height / 2;
             const vesselLength = canvas.width - 100;
             const startX = 50;
-            const pixelRadius = Math.max(20, radius * 50000); // Scale for visualization
+            const pixelRadius = Math.max(30, radius * 40000); // Scale for visualization
             
             // Draw vessel walls
             ctx.fillStyle = vesselColor;
             ctx.fillRect(startX, centerY - pixelRadius - wallThickness, vesselLength, wallThickness);
             ctx.fillRect(startX, centerY + pixelRadius, vesselLength, wallThickness);
             
-            // Draw flow particles
-            const numParticles = 50;
-            const particleSpeed = maxVelocity * 200; // Scale for visualization
+            // Draw velocity profile curve (compact version)
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
             
-            for (let i = 0; i < numParticles; i++) {
-                const y = centerY - pixelRadius + (2 * pixelRadius * i / numParticles);
+            for (let i = 0; i <= 20; i++) {
+                const y = centerY - pixelRadius + (2 * pixelRadius * i / 20);
                 const distanceFromCenter = Math.abs(y - centerY);
+                const normalizedDistance = distanceFromCenter / pixelRadius;
+                
+                // Parabolic velocity profile: v(r) = v_max * (1 - (r/R)²)
+                let velocityFactor;
+                if (reynolds < 2000) {
+                    velocityFactor = 1 - (normalizedDistance * normalizedDistance);
+                } else {
+                    velocityFactor = Math.pow(1 - normalizedDistance, 0.2);
+                }
+                
+                const profileX = startX + vesselLength + 30 + velocityFactor * 50;
+                
+                if (i === 0) {
+                    ctx.moveTo(profileX, y);
+                } else {
+                    ctx.lineTo(profileX, y);
+                }
+            }
+            ctx.stroke();
+            
+            // Draw velocity profile axis
+            ctx.strokeStyle = '#34495e';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(startX + vesselLength + 30, centerY - pixelRadius);
+            ctx.lineTo(startX + vesselLength + 30, centerY + pixelRadius);
+            ctx.moveTo(startX + vesselLength + 30, centerY + pixelRadius);
+            ctx.lineTo(startX + vesselLength + 90, centerY + pixelRadius);
+            ctx.stroke();
+            
+            // Draw velocity profile labels
+            ctx.fillStyle = '#34495e';
+            ctx.font = '10px Arial';
+            ctx.fillText('Velocity', startX + vesselLength + 35, centerY - pixelRadius - 5);
+            ctx.fillText('Profile', startX + vesselLength + 35, centerY - pixelRadius + 5);
+            
+            // Draw flow streamlines (horizontal lines showing flow paths)
+            const numStreamlines = 4;
+            for (let i = 0; i < numStreamlines; i++) {
+                const streamlineY = centerY - pixelRadius + 20 + (2 * pixelRadius - 40) * i / (numStreamlines - 1);
+                const distanceFromCenter = Math.abs(streamlineY - centerY);
                 const normalizedDistance = distanceFromCenter / pixelRadius;
                 
                 // Parabolic velocity profile
                 let velocityFactor;
                 if (reynolds < 2000) {
-                    // Laminar flow - parabolic profile
                     velocityFactor = 1 - (normalizedDistance * normalizedDistance);
                 } else {
-                    // Turbulent flow - flatter profile
                     velocityFactor = Math.pow(1 - normalizedDistance, 0.2);
                 }
                 
-                const particleVelocity = particleSpeed * velocityFactor;
-                const x = (startX + (time * particleVelocity / 10) + i * 20) % (vesselLength + 100);
+                // Draw streamline (horizontal line)
+                const streamlineHue = 240 - velocityFactor * 180; // Blue to red
+                ctx.strokeStyle = `hsl(${streamlineHue}, 70%, 50%)`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(startX, streamlineY);
+                ctx.lineTo(startX + vesselLength, streamlineY);
+                ctx.stroke();
                 
-                // Color based on velocity
-                const hue = 240 - (velocityFactor * 240); // Blue to red
-                ctx.fillStyle = `hsl(${hue}, 70%, 50%)`;
-                
-                if (x >= startX && x <= startX + vesselLength) {
-                    ctx.beginPath();
-                    ctx.arc(x, y, 3, 0, 2 * Math.PI);
-                    ctx.fill();
-                    
-                    // Add velocity vectors
-                    if (i % 5 === 0) {
-                        ctx.strokeStyle = `hsl(${hue}, 70%, 30%)`;
+                // Add velocity arrows along streamline
+                if (i % 2 === 0) {
+                    for (let j = 1; j < 4; j++) {
+                        const x = startX + (j / 4) * vesselLength;
+                        const arrowLength = 15 * velocityFactor;
+                        
+                        ctx.strokeStyle = `hsl(${streamlineHue}, 70%, 30%)`;
                         ctx.lineWidth = 2;
                         ctx.beginPath();
-                        ctx.moveTo(x, y);
-                        ctx.lineTo(x + velocityFactor * 20, y);
+                        ctx.moveTo(x, streamlineY);
+                        ctx.lineTo(x + arrowLength, streamlineY);
+                        ctx.stroke();
+                        
+                        // Arrow head
+                        ctx.beginPath();
+                        ctx.moveTo(x + arrowLength - 3, streamlineY - 2);
+                        ctx.lineTo(x + arrowLength, streamlineY);
+                        ctx.lineTo(x + arrowLength - 3, streamlineY + 2);
                         ctx.stroke();
                     }
                 }
             }
             
-            // Draw pressure gradient arrow
+            // Draw moving particles to show parabolic velocity profile
+            const numParticles = 6;
+            for (let i = 0; i < numParticles; i++) {
+                // Position particles at different radial positions
+                const particleY = centerY - pixelRadius + 20 + (2 * pixelRadius - 40) * i / (numParticles - 1);
+                const distanceFromCenter = Math.abs(particleY - centerY);
+                const normalizedDistance = distanceFromCenter / pixelRadius;
+                
+                // Parabolic velocity profile
+                let velocityFactor;
+                if (reynolds < 2000) {
+                    velocityFactor = 1 - (normalizedDistance * normalizedDistance);
+                } else {
+                    velocityFactor = Math.pow(1 - normalizedDistance, 0.2);
+                }
+                
+                // Each particle moves at a speed proportional to its position
+                const particleSpeed = maxVelocity * 60 * velocityFactor;
+                const x = (startX + (time * particleSpeed / 100)) % (vesselLength + 30);
+                
+                if (x >= startX && x <= startX + vesselLength) {
+                    // Color based on velocity
+                    const particleHue = 240 - (velocityFactor * 180); // Blue to red
+                    ctx.fillStyle = `hsl(${particleHue}, 70%, 60%)`;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, particleY, 4, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    // Add particle glow
+                    ctx.strokeStyle = `hsl(${particleHue}, 70%, 40%)`;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            }
+            
+            // Draw pressure gradient
             ctx.fillStyle = '#34495e';
             ctx.font = '14px Arial';
             ctx.fillText('High P', startX - 30, centerY - pixelRadius - 20);
@@ -387,6 +474,25 @@
             ctx.lineTo(startX + vesselLength, centerY - pixelRadius - 40);
             ctx.lineTo(startX + vesselLength - 10, centerY - pixelRadius - 35);
             ctx.stroke();
+            
+            // Add flow type label
+            ctx.fillStyle = reynolds < 2000 ? '#27ae60' : '#e74c3c';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText(reynolds < 2000 ? 'LAMINAR FLOW' : 'TURBULENT FLOW', 
+                        startX, centerY - pixelRadius - 40);
+            
+            // Add Reynolds number
+            ctx.fillStyle = '#34495e';
+            ctx.font = '12px Arial';
+            ctx.fillText(`Re = ${reynolds.toFixed(0)}`, startX, centerY + pixelRadius + 25);
+            
+            // Add legend
+            ctx.fillStyle = '#34495e';
+            ctx.font = '10px Arial';
+            ctx.fillText('Lines = Flow paths', startX, centerY + pixelRadius + 40);
+            ctx.fillText('Dots = Moving particles', startX, centerY + pixelRadius + 52);
+            ctx.fillText('Center = Fast (Red)', startX, centerY + pixelRadius + 64);
+            ctx.fillText('Walls = Slow (Blue)', startX, centerY + pixelRadius + 76);
         }
         
         function animate() {
