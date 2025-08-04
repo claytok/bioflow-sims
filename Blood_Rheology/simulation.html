@@ -208,11 +208,11 @@
         </div>
         
         <div class="condition-buttons">
-            <button class="condition-btn active" onclick="setCondition('normal')">Normal Blood</button>
-            <button class="condition-btn" onclick="setCondition('anemia')">Anemia</button>
-            <button class="condition-btn" onclick="setCondition('polycythemia')">Polycythemia</button>
-            <button class="condition-btn" onclick="setCondition('sickle')">Sickle Cell</button>
-            <button class="condition-btn" onclick="setCondition('diabetes')">Diabetes</button>
+            <button class="condition-btn active" onclick="setCondition('normal', event)">Normal Blood</button>
+            <button class="condition-btn" onclick="setCondition('anemia', event)">Anemia</button>
+            <button class="condition-btn" onclick="setCondition('polycythemia', event)">Polycythemia</button>
+            <button class="condition-btn" onclick="setCondition('sickle', event)">Sickle Cell</button>
+            <button class="condition-btn" onclick="setCondition('diabetes', event)">Diabetes</button>
         </div>
         
         <div class="simulation-area">
@@ -297,6 +297,7 @@
         
         let currentCondition = 'normal';
         let animationTime = 0;
+        let animationId = null;
         
 
         
@@ -333,6 +334,10 @@
         }
         
         function drawRheologyChart() {
+            if (!rheologyCtx || !rheologyCanvas) {
+                console.error('Rheology canvas not available');
+                return;
+            }
             rheologyCtx.clearRect(0, 0, rheologyCanvas.width, rheologyCanvas.height);
             
             const hct = parseFloat(hematocritSlider.value);
@@ -417,6 +422,10 @@
         }
         
         function drawFlowVisualization() {
+            if (!flowCtx || !flowCanvas) {
+                console.error('Flow canvas not available');
+                return;
+            }
             flowCtx.clearRect(0, 0, flowCanvas.width, flowCanvas.height);
             
             const hct = parseFloat(hematocritSlider.value);
@@ -440,7 +449,7 @@
             const numCells = Math.floor(20 + hct * 0.5); // More cells with higher hematocrit
             
             for (let i = 0; i < numCells; i++) {
-                const x = 50 + (i * 30) % (flowCanvas.width - 100);
+                const x = 50 + (i * 30 + animationTime * 20) % (flowCanvas.width - 100);
                 const y = centerY - vesselRadius + 20 + (i * 15) % (vesselRadius * 2 - 40);
                 
                 // Cell deformation based on shear rate
@@ -535,7 +544,7 @@
             }
         };
         
-        function setCondition(condition) {
+        function setCondition(condition, event) {
             currentCondition = condition;
             const config = conditions[condition];
             
@@ -549,7 +558,9 @@
             document.querySelectorAll('.condition-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
             
             // Update displays
             updateDisplays();
@@ -558,6 +569,11 @@
         }
         
         function updateDisplays() {
+            if (!hematocritSlider || !shearRateSlider || !temperatureSlider || !aggregationSlider) {
+                console.error('Slider elements not found');
+                return;
+            }
+            
             const hct = parseFloat(hematocritSlider.value);
             const shearRate = parseFloat(shearRateSlider.value);
             const temp = parseFloat(temperatureSlider.value);
@@ -635,6 +651,24 @@
         });
         
         // Initialize
-        updateDisplays();
-        drawRheologyChart();
-        drawFlowVisualization();
+        console.log('Initializing Blood Rheology simulation...');
+        console.log('Canvas elements:', { rheologyCanvas, flowCanvas });
+        console.log('Context elements:', { rheologyCtx, flowCtx });
+        
+        // Check if all elements are loaded
+        if (rheologyCanvas && flowCanvas && rheologyCtx && flowCtx) {
+            updateDisplays();
+            drawRheologyChart();
+            drawFlowVisualization();
+            console.log('Simulation initialized successfully');
+            
+            // Start animation loop
+            function animate() {
+                animationTime += 0.1;
+                drawFlowVisualization();
+                animationId = requestAnimationFrame(animate);
+            }
+            animate();
+        } else {
+            console.error('Canvas elements not found');
+        }
