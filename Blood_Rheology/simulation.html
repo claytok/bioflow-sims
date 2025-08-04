@@ -298,39 +298,7 @@
         let currentCondition = 'normal';
         let animationTime = 0;
         
-        // Blood conditions
-        const conditions = {
-            normal: {
-                name: 'Normal Blood',
-                hematocrit: 42,
-                aggregation: 50,
-                note: 'Within normal range'
-            },
-            anemia: {
-                name: 'Anemia',
-                hematocrit: 25,
-                aggregation: 30,
-                note: 'Reduced oxygen carrying capacity'
-            },
-            polycythemia: {
-                name: 'Polycythemia',
-                hematocrit: 55,
-                aggregation: 70,
-                note: 'Increased thrombosis risk'
-            },
-            sickle: {
-                name: 'Sickle Cell Disease',
-                hematocrit: 35,
-                aggregation: 80,
-                note: 'Increased viscosity, vaso-occlusion'
-            },
-            diabetes: {
-                name: 'Diabetes',
-                hematocrit: 40,
-                aggregation: 75,
-                note: 'Enhanced aggregation, poor circulation'
-            }
-        };
+
         
         function calculateViscosity(shearRate, hematocrit, temperature, aggregation) {
             // Carreau-Yasuda model for blood viscosity
@@ -523,27 +491,150 @@
             flowCtx.fillText(`HCT: ${hct}% | Shear: ${shearRate.toFixed(1)} s⁻¹`, 10, flowCanvas.height - 10);
         }
         
+        // Condition configurations
+        const conditions = {
+            normal: {
+                name: 'Normal Blood',
+                hematocrit: 45,
+                temperature: 37,
+                aggregation: 50,
+                shearRate: 100,
+                note: 'Healthy blood parameters'
+            },
+            anemia: {
+                name: 'Anemia',
+                hematocrit: 25,
+                temperature: 37,
+                aggregation: 30,
+                shearRate: 50,
+                note: 'Low RBC count, reduced viscosity'
+            },
+            polycythemia: {
+                name: 'Polycythemia',
+                hematocrit: 60,
+                temperature: 37,
+                aggregation: 80,
+                shearRate: 200,
+                note: 'High RBC count, increased viscosity'
+            },
+            sickle: {
+                name: 'Sickle Cell Disease',
+                hematocrit: 35,
+                temperature: 37,
+                aggregation: 90,
+                shearRate: 300,
+                note: 'Rigid cells, poor flow'
+            },
+            diabetes: {
+                name: 'Diabetes',
+                hematocrit: 45,
+                temperature: 37,
+                aggregation: 75,
+                shearRate: 150,
+                note: 'Enhanced aggregation, poor circulation'
+            }
+        };
+        
+        function setCondition(condition) {
+            currentCondition = condition;
+            const config = conditions[condition];
+            
+            // Update sliders
+            hematocritSlider.value = config.hematocrit;
+            shearRateSlider.value = config.shearRate;
+            temperatureSlider.value = config.temperature;
+            aggregationSlider.value = config.aggregation;
+            
+            // Update button states
+            document.querySelectorAll('.condition-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update displays
+            updateDisplays();
+            drawRheologyChart();
+            drawFlowVisualization();
+        }
+        
+        function updateDisplays() {
+            const hct = parseFloat(hematocritSlider.value);
+            const shearRate = parseFloat(shearRateSlider.value);
+            const temp = parseFloat(temperatureSlider.value);
+            const agg = parseFloat(aggregationSlider.value);
+            
+            // Update slider displays
+            hematocritValue.textContent = `${hct}%`;
+            shearRateValue.textContent = `${shearRate} s⁻¹`;
+            temperatureValue.textContent = `${temp}°C ${temp === 37 ? '(Body temp)' : ''}`;
+            
+            // Update aggregation description
+            if (agg < 30) {
+                aggregationValue.textContent = 'Low aggregation';
+            } else if (agg < 60) {
+                aggregationValue.textContent = 'Normal aggregation';
+            } else {
+                aggregationValue.textContent = 'High aggregation';
+            }
+            
+            // Calculate and display viscosity
+            const viscosity = calculateViscosity(shearRate, hct, temp, agg);
+            viscosityValue.textContent = `${(viscosity * 1000).toFixed(1)} mPa·s`;
+            
+            // Update flow behavior
+            if (shearRate < 50) {
+                flowBehavior.textContent = 'Yield stress dominant';
+            } else if (shearRate < 200) {
+                flowBehavior.textContent = 'Shear-thinning';
+            } else {
+                flowBehavior.textContent = 'Newtonian-like';
+            }
+            
+            // Update deformation
+            const deformation = Math.min(shearRate / 100, 5);
+            if (deformation < 1) {
+                deformationValue.textContent = 'Minimal';
+            } else if (deformation < 3) {
+                deformationValue.textContent = 'Moderate';
+            } else {
+                deformationValue.textContent = 'High';
+            }
+            
+            // Calculate yield stress
+            const yieldStressValue = 0.1 + (agg / 100) * 0.3;
+            yieldStress.textContent = `${yieldStressValue.toFixed(2)} Pa`;
+            
+            // Update condition info
+            conditionName.textContent = conditions[currentCondition].name;
+            clinicalNote.textContent = conditions[currentCondition].note;
+        }
+        
         // Event listeners
         hematocritSlider.addEventListener('input', () => {
+            updateDisplays();
             drawRheologyChart();
             drawFlowVisualization();
         });
         
         temperatureSlider.addEventListener('input', () => {
+            updateDisplays();
             drawRheologyChart();
             drawFlowVisualization();
         });
         
         aggregationSlider.addEventListener('input', () => {
+            updateDisplays();
             drawRheologyChart();
             drawFlowVisualization();
         });
         
         shearRateSlider.addEventListener('input', () => {
+            updateDisplays();
             drawRheologyChart();
             drawFlowVisualization();
         });
         
         // Initialize
+        updateDisplays();
         drawRheologyChart();
         drawFlowVisualization();
