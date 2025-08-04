@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biotransport Phenomena - Interactive Simulations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .simulations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .simulation-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .simulation-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .simulation-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            font-size: 24px;
+            color: white;
+        }
+
+        .blood-rheology .card-icon {
+            background: linear-gradient(135deg, #e17055, #d63031);
+        }
+
+        .diffusion .card-icon {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+        }
+
+        .poiseuille-flow .card-icon {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .card-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .card-description {
+            color: #7f8c8d;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .card-features {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        .card-features li {
+            padding: 5px 0;
+            color: #34495e;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .card-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .launch-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            width: 100%;
+        }
+
+        .launch-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 50px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+        }
+
+        .footer h3 {
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .footer p {
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .simulations-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Biotransport Phenomena</h1>
+            <p>Interactive simulations for understanding fundamental transport processes in biological systems</p>
+        </div>
+
+        <div class="simulations-grid">
+            <div class="simulation-card blood-rheology" onclick="window.open('Blood_Rheology/simulation.html', '_blank')">
+                <div class="card-header">
+                    <div class="card-icon">🩸</div>
+                    <div class="card-title">Blood Rheology</div>
+                </div>
+                <div class="card-description">
+                    Explore the non-Newtonian behavior of blood flow, including viscosity changes with shear rate, hematocrit effects, and temperature dependence.
+                </div>
+                <ul class="card-features">
+                    <li>Non-Newtonian viscosity modeling</li>
+                    <li>Hematocrit and temperature effects</li>
+                    <li>Shear-thinning behavior visualization</li>
+                    <li>Red blood cell aggregation</li>
+                </ul>
+                <button class="launch-btn">Launch Simulation</button>
+            </div>
+
+            <div class="simulation-card diffusion" onclick="window.open('Diffusion/simulation.html', '_blank')">
+                <div class="card-header">
+                    <div class="card-icon">🌊</div>
+                    <div class="card-title">Mass Transport: Diffusion</div>
+                </div>
+                <div class="card-description">
+                    Study molecular diffusion in biological systems, including concentration gradients, temperature effects, and molecule size impacts.
+                </div>
+                <ul class="card-features">
+                    <li>Concentration gradient visualization</li>
+                    <li>Temperature and size effects</li>
+                    <li>Diffusion coefficient calculations</li>
+                    <li>Real-time concentration profiles</li>
+                </ul>
+                <button class="launch-btn">Launch Simulation</button>
+            </div>
+
+            <div class="simulation-card poiseuille-flow" onclick="window.open('Poiseuille_Flow/simulation.html', '_blank')">
+                <div class="card-header">
+                    <div class="card-icon">💧</div>
+                    <div class="card-title">Poiseuille Flow</div>
+                </div>
+                <div class="card-description">
+                    Investigate laminar flow in blood vessels with pressure gradients, velocity profiles, and Reynolds number effects.
+                </div>
+                <ul class="card-features">
+                    <li>Parabolic velocity profiles</li>
+                    <li>Pressure gradient effects</li>
+                    <li>Reynolds number analysis</li>
+                    <li>Vessel geometry impacts</li>
+                </ul>
+                <button class="launch-btn">Launch Simulation</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <h3>About This Project</h3>
+            <p>
+                These interactive simulations are designed for senior-level biomedical engineering students to explore fundamental biotransport phenomena. 
+                Each simulation provides hands-on experience with the physical principles governing transport processes in biological systems, 
+                from molecular diffusion to complex blood flow dynamics.
+            </p>
+        </div>
+    </div>
+</body>
+</html> 

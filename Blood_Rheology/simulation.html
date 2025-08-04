@@ -466,4 +466,84 @@
             // Calculate cell properties
             const cellDeformation = Math.min(shearRate / 100, 5); // Deformation factor
             const cellSize = 4 + (60 - hct) / 10; // Larger cells with lower hematocrit
-            const aggregationEffect = Math.max(0, 1 - shearRate / 100) * agg /
+            const aggregationEffect = Math.max(0, 1 - shearRate / 100) * agg / 100;
+            
+            // Draw red blood cells
+            const numCells = Math.floor(20 + hct * 0.5); // More cells with higher hematocrit
+            
+            for (let i = 0; i < numCells; i++) {
+                const x = 50 + (i * 30) % (flowCanvas.width - 100);
+                const y = centerY - vesselRadius + 20 + (i * 15) % (vesselRadius * 2 - 40);
+                
+                // Cell deformation based on shear rate
+                const cellWidth = cellSize * (1 + cellDeformation);
+                const cellHeight = cellSize * (1 - cellDeformation * 0.3);
+                
+                // Cell color based on aggregation
+                const redIntensity = 200 + Math.floor(aggregationEffect * 55);
+                flowCtx.fillStyle = `rgb(${redIntensity}, 50, 50)`;
+                
+                // Draw deformed cell
+                flowCtx.beginPath();
+                flowCtx.ellipse(x, y, cellWidth, cellHeight, 0, 0, 2 * Math.PI);
+                flowCtx.fill();
+                
+                // Add cell membrane
+                flowCtx.strokeStyle = '#8B0000';
+                flowCtx.lineWidth = 1;
+                flowCtx.stroke();
+            }
+            
+            // Draw velocity profile
+            flowCtx.strokeStyle = '#3498db';
+            flowCtx.lineWidth = 3;
+            flowCtx.beginPath();
+            
+            for (let i = 0; i < flowCanvas.width - 100; i++) {
+                const x = 50 + i;
+                const distanceFromCenter = Math.abs(x - flowCanvas.width / 2);
+                const normalizedDistance = distanceFromCenter / (flowCanvas.width / 2 - 50);
+                
+                // Parabolic velocity profile
+                const velocityFactor = 1 - (normalizedDistance * normalizedDistance);
+                const y = centerY - vesselRadius + 20 + (vesselRadius * 2 - 40) * velocityFactor;
+                
+                if (i === 0) {
+                    flowCtx.moveTo(x, y);
+                } else {
+                    flowCtx.lineTo(x, y);
+                }
+            }
+            flowCtx.stroke();
+            
+            // Add labels
+            flowCtx.fillStyle = '#2c3e50';
+            flowCtx.font = '14px Arial';
+            flowCtx.fillText('Blood Flow Visualization', 10, 30);
+            flowCtx.fillText(`HCT: ${hct}% | Shear: ${shearRate.toFixed(1)} s⁻¹`, 10, flowCanvas.height - 10);
+        }
+        
+        // Event listeners
+        hematocritSlider.addEventListener('input', () => {
+            drawRheologyChart();
+            drawFlowVisualization();
+        });
+        
+        temperatureSlider.addEventListener('input', () => {
+            drawRheologyChart();
+            drawFlowVisualization();
+        });
+        
+        aggregationSlider.addEventListener('input', () => {
+            drawRheologyChart();
+            drawFlowVisualization();
+        });
+        
+        shearRateSlider.addEventListener('input', () => {
+            drawRheologyChart();
+            drawFlowVisualization();
+        });
+        
+        // Initialize
+        drawRheologyChart();
+        drawFlowVisualization();
