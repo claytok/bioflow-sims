@@ -138,6 +138,13 @@
         .parameter strong {
             color: #2c3e50;
         }
+        .biological-context {
+            font-size: 11px;
+            color: #e74c3c;
+            font-style: italic;
+            text-align: center;
+            margin-top: 3px;
+        }
     </style>
 </head>
 <body>
@@ -145,11 +152,11 @@
         <h1>Blood Rheology</h1>
         
         <div class="scenario-buttons">
-            <button class="scenario-btn active" onclick="setCondition('normal')">Normal Blood</button>
-            <button class="scenario-btn" onclick="setCondition('anemia')">Anemia</button>
-            <button class="scenario-btn" onclick="setCondition('polycythemia')">Polycythemia</button>
-            <button class="scenario-btn" onclick="setCondition('sickle')">Sickle Cell</button>
-            <button class="scenario-btn" onclick="setCondition('diabetes')">Diabetes</button>
+            <button class="scenario-btn active" onclick="setCondition('normal', event)">Normal Blood</button>
+            <button class="scenario-btn" onclick="setCondition('anemia', event)">Anemia</button>
+            <button class="scenario-btn" onclick="setCondition('polycythemia', event)">Polycythemia</button>
+            <button class="scenario-btn" onclick="setCondition('sickle', event)">Sickle Cell</button>
+            <button class="scenario-btn" onclick="setCondition('diabetes', event)">Diabetes</button>
         </div>
         
         <div class="controls">
@@ -157,24 +164,28 @@
                 <label for="hematocrit">Hematocrit (%)</label>
                 <input type="range" id="hematocrit" min="20" max="60" value="45" step="5">
                 <div class="value-display" id="hematocritValue">45%</div>
+                <div class="biological-context" id="hematocritContext">Normal Blood</div>
             </div>
             
             <div class="control-group">
                 <label for="shearRate">Shear Rate (s⁻¹)</label>
                 <input type="range" id="shearRate" min="0.1" max="1000" value="100" step="10">
                 <div class="value-display" id="shearRateValue">100 s⁻¹</div>
+                <div class="biological-context" id="shearRateContext">Medium Flow</div>
             </div>
             
             <div class="control-group">
                 <label for="temperature">Temperature (°C)</label>
                 <input type="range" id="temperature" min="20" max="40" value="37" step="1">
                 <div class="value-display" id="temperatureValue">37°C</div>
+                <div class="biological-context" id="temperatureContext">Body Temperature</div>
             </div>
             
             <div class="control-group">
                 <label for="aggregation">RBC Aggregation</label>
                 <input type="range" id="aggregation" min="0" max="100" value="50" step="5">
                 <div class="value-display" id="aggregationValue">50%</div>
+                <div class="biological-context" id="aggregationContext">Normal Aggregation</div>
             </div>
         </div>
         
@@ -266,6 +277,11 @@
         const deformationDisplay = document.getElementById('deformationDisplay');
         const aggregationIndexDisplay = document.getElementById('aggregationIndexDisplay');
         
+        const hematocritContext = document.getElementById('hematocritContext');
+        const shearRateContext = document.getElementById('shearRateContext');
+        const temperatureContext = document.getElementById('temperatureContext');
+        const aggregationContext = document.getElementById('aggregationContext');
+        
         const conditions = {
             normal: {
                 name: 'Normal Blood',
@@ -304,7 +320,7 @@
             }
         };
         
-        function setCondition(condition) {
+        function setCondition(condition, event = null) {
             const config = conditions[condition];
             
             // Update sliders
@@ -321,9 +337,11 @@
             document.querySelectorAll('.scenario-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            if (event) {
+                event.target.classList.add('active');
+            }
             
-            // Update displays
+            // Update displays (this now includes updateBiologicalContext())
             updateDisplays();
             drawRheologyChart();
             drawFlowVisualization();
@@ -485,21 +503,24 @@
             // Calculate current viscosity
             const viscosity = calculateViscosity(shearRate, hct, temp, agg);
             
-            // Calculate flow behavior index (n)
-            const n = 0.6; // Typical for blood
+            // Calculate flow behavior index (n) - varies with shear rate
+            const n = 0.4 + 0.4 * Math.exp(-shearRate / 50); // More non-Newtonian at low shear
             
-            // Calculate yield stress
-            const yieldStress = 0.05 * (1 + agg);
+            // Calculate yield stress - more realistic values
+            const yieldStress = 0.02 * (1 + agg / 50); // 0.02-0.06 Pa range
             
-            // Calculate RBC deformation
-            const deformation = Math.min(shearRate / 100, 5);
+            // Calculate RBC deformation - more realistic
+            const deformation = Math.min(shearRate / 200, 3);
             
             // Update displays
             viscosityDisplay.textContent = `${(viscosity * 1000).toFixed(1)} mPa·s`;
-            flowIndexDisplay.textContent = n.toFixed(1);
-            yieldStressDisplay.textContent = `${yieldStress.toFixed(2)} Pa`;
+            flowIndexDisplay.textContent = n.toFixed(2);
+            yieldStressDisplay.textContent = `${yieldStress.toFixed(3)} Pa`;
             deformationDisplay.textContent = deformation.toFixed(1);
-            aggregationIndexDisplay.textContent = (agg * 100).toFixed(0);
+            aggregationIndexDisplay.textContent = agg.toFixed(0);
+            
+            // Update biological context
+            updateBiologicalContext();
         }
         
         // Event listeners
@@ -530,6 +551,40 @@
             drawRheologyChart();
             drawFlowVisualization();
         });
+        
+        function updateBiologicalContext() {
+            const hct = parseFloat(hematocritSlider.value);
+            const shearRate = parseFloat(shearRateSlider.value);
+            const temp = parseFloat(temperatureSlider.value);
+            const agg = parseFloat(aggregationSlider.value);
+            
+            // Hematocrit context
+            if (hct < 30) hematocritContext.textContent = 'Anemia';
+            else if (hct < 40) hematocritContext.textContent = 'Low Normal';
+            else if (hct < 50) hematocritContext.textContent = 'Normal Blood';
+            else if (hct < 55) hematocritContext.textContent = 'High Normal';
+            else hematocritContext.textContent = 'Polycythemia';
+            
+            // Shear rate context
+            if (shearRate < 1) shearRateContext.textContent = 'Very Low Flow';
+            else if (shearRate < 10) shearRateContext.textContent = 'Low Flow';
+            else if (shearRate < 100) shearRateContext.textContent = 'Medium Flow';
+            else if (shearRate < 500) shearRateContext.textContent = 'High Flow';
+            else shearRateContext.textContent = 'Very High Flow';
+            
+            // Temperature context
+            if (temp < 30) temperatureContext.textContent = 'Hypothermia';
+            else if (temp < 36) temperatureContext.textContent = 'Low Normal';
+            else if (temp < 38) temperatureContext.textContent = 'Body Temperature';
+            else temperatureContext.textContent = 'Fever';
+            
+            // Aggregation context
+            if (agg < 20) aggregationContext.textContent = 'Low Aggregation';
+            else if (agg < 40) aggregationContext.textContent = 'Normal Aggregation';
+            else if (agg < 60) aggregationContext.textContent = 'High Aggregation';
+            else if (agg < 80) aggregationContext.textContent = 'Very High Aggregation';
+            else aggregationContext.textContent = 'Pathological Aggregation';
+        }
         
         // Initialize
         updateDisplays();
