@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biotransport Phenomena - Interactive Simulations</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2300529B'/%3E%3Cpath d='M30 20 Q50 40 70 20 Q80 30 75 50 Q70 70 50 80 Q30 70 25 50 Q20 30 30 20' fill='%23FFB81C'/%3E%3Ccircle cx='25' cy='35' r='2' fill='%23FFB81C'/%3E%3Ccircle cx='22' cy='32' r='1.5' fill='%23FFB81C'/%3E%3Ccircle cx='28' cy='30' r='1.8' fill='%23FFB81C'/%3E%3Ccircle cx='20' cy='28' r='1.2' fill='%23FFB81C'/%3E%3Ccircle cx='26' cy='26' r='1.4' fill='%23FFB81C'/%3E%3Ccircle cx='18' cy='24' r='1' fill='%23FFB81C'/%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -117,6 +118,10 @@
             background: linear-gradient(135deg, #FFB81C, #FFD700);
         }
 
+        .euler .card-icon {
+            background: linear-gradient(135deg, #9B59B6, #8E44AD);
+        }
+
         .card-title {
             font-family: 'Inter', sans-serif;
             font-size: 1.4em;
@@ -223,6 +228,23 @@
         </div>
 
         <div class="simulations-grid">
+            <div class="simulation-card euler" onclick="window.open('Euler/simulation.html', '_blank')">
+                <div class="card-header">
+                    <div class="card-icon">🔄</div>
+                    <div class="card-title">Lagrangian vs Eulerian</div>
+                </div>
+                <div class="card-description">
+                    Compare Lagrangian and Eulerian perspectives in fluid dynamics through interactive red blood cell tracking and flow measurement.
+                </div>
+                <ul class="card-features">
+                    <li>Side-by-side perspective comparison</li>
+                    <li>Particle tracking visualization</li>
+                    <li>Fixed-point flow measurement</li>
+                    <li>Real-time position and velocity data</li>
+                </ul>
+                <button class="launch-btn">Launch Simulation</button>
+            </div>
+
             <div class="simulation-card blood-rheology" onclick="window.open('Blood_Rheology/working-simulation.html', '_blank')">
                 <div class="card-header">
                     <div class="card-icon">🩸</div>
@@ -240,23 +262,6 @@
                 <button class="launch-btn">Launch Simulation</button>
             </div>
 
-            <div class="simulation-card diffusion" onclick="window.open('Diffusion/working-simulation.html', '_blank')">
-                <div class="card-header">
-                    <div class="card-icon">🌊</div>
-                    <div class="card-title">Mass Transport: Diffusion</div>
-                </div>
-                <div class="card-description">
-                    Study molecular diffusion in biological systems, including concentration gradients, temperature effects, and molecule size impacts.
-                </div>
-                <ul class="card-features">
-                    <li>Concentration gradient visualization</li>
-                    <li>Temperature and size effects</li>
-                    <li>Diffusion coefficient calculations</li>
-                    <li>Real-time concentration profiles</li>
-                </ul>
-                <button class="launch-btn">Launch Simulation</button>
-            </div>
-
             <div class="simulation-card poiseuille-flow" onclick="window.open('Poiseuille_Flow/working-simulation.html', '_blank')">
                 <div class="card-header">
                     <div class="card-icon">💧</div>
@@ -270,6 +275,23 @@
                     <li>Pressure gradient effects</li>
                     <li>Reynolds number analysis</li>
                     <li>Vessel geometry impacts</li>
+                </ul>
+                <button class="launch-btn">Launch Simulation</button>
+            </div>
+
+            <div class="simulation-card diffusion" onclick="window.open('Diffusion/working-simulation.html', '_blank')">
+                <div class="card-header">
+                    <div class="card-icon">🌊</div>
+                    <div class="card-title">Mass Transport: Diffusion</div>
+                </div>
+                <div class="card-description">
+                    Study molecular diffusion in biological systems, including concentration gradients, temperature effects, and molecule size impacts.
+                </div>
+                <ul class="card-features">
+                    <li>Concentration gradient visualization</li>
+                    <li>Temperature and size effects</li>
+                    <li>Diffusion coefficient calculations</li>
+                    <li>Real-time concentration profiles</li>
                 </ul>
                 <button class="launch-btn">Launch Simulation</button>
             </div>
