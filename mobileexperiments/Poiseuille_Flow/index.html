@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../bioflowsim.png">
+    <title>Working Poiseuille Flow</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            font-weight: 300;
+            letter-spacing: -0.02em;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .value-display {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            margin-top: 5px;
+        }
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            display: block;
+            margin: 0 auto;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f4fd;
+            border-radius: 8px;
+        }
+        .info h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .info ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .info li {
+            margin: 5px 0;
+        }
+        .scenario-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .scenario-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+        }
+        .scenario-btn:hover {
+            background: linear-gradient(135deg, #2980b9, #1f5f8b);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+        }
+        .scenario-btn.active {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+        }
+        .equations {
+            background: #f1f2f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .equation {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #27ae60;
+        }
+        .parameters {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .parameter {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .parameter strong {
+            color: #2c3e50;
+        }
+        .biological-context {
+            font-size: 11px;
+            color: #27ae60;
+            font-style: italic;
+            text-align: center;
+            margin-top: 3px;
+        }
+        .reset-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+            margin-top: 10px;
+        }
+        .reset-btn:hover {
+            background: linear-gradient(135deg, #229954, #1e8449);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2em;
+                margin-bottom: 20px;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 10px;
+            }
+            
+            .control-group {
+                margin-bottom: 10px;
+            }
+            
+            .scenario-buttons {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .scenario-btn {
+                padding: 12px 16px;
+                font-size: 14px;
+                text-align: center;
+            }
+            
+            canvas {
+                max-width: 100%;
+                height: auto;
+            }
+            
+            .info {
+                padding: 12px;
+                margin-top: 15px;
+            }
+            
+            .info h3 {
+                font-size: 1.2em;
+            }
+            
+            .info ul {
+                font-size: 0.9em;
+            }
+            
+            .equations {
+                font-size: 12px;
+                padding: 10px;
+            }
+            
+            .parameters {
+                padding: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                margin: 5px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .scenario-btn {
+                padding: 10px 14px;
+                font-size: 13px;
+            }
+            
+            .info {
+                padding: 10px;
+            }
+            
+            .info h3 {
+                font-size: 1.1em;
+            }
+            
+            .info ul {
+                font-size: 0.85em;
+            }
+            
+            .equations {
+                font-size: 11px;
+                padding: 8px;
+            }
+            
+            .parameters {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Poiseuille Flow</h1>
+        
+        <div class="scenario-buttons">
+            <button class="scenario-btn active" onclick="setVessel('artery')">Artery</button>
+            <button class="scenario-btn" onclick="setVessel('vein')">Vein</button>
+            <button class="scenario-btn" onclick="setVessel('capillary')">Capillary</button>
+            <button class="scenario-btn" onclick="setVessel('stenosis')">Stenosis</button>
+            <button class="scenario-btn" onclick="setVessel('aneurysm')">Aneurysm</button>
+            <button class="scenario-btn" onclick="setVessel('exercise')">Exercise</button>
+            <button class="scenario-btn" onclick="setVessel('anemia')">Anemia</button>
+            <button class="scenario-btn" onclick="setVessel('diabetes')">Diabetes</button>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="pressure">Pressure Gradient (Pa/m)</label>
+                <input type="range" id="pressure" min="10" max="25000" value="400" step="100">
+                <div class="value-display" id="pressureValue">400 Pa/m</div>
+                <div class="biological-context" id="pressureContext">Normal Artery</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="radius">Vessel Radius (mm)</label>
+                <input type="range" id="radius" min="0.004" max="5" value="2.0" step="0.1">
+                <div class="value-display" id="radiusValue">2.0 mm</div>
+                <div class="biological-context" id="radiusContext">Medium Artery</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="viscosity">Blood Viscosity (mPa·s)</label>
+                <input type="range" id="viscosity" min="2" max="10" value="4" step="0.2">
+                <div class="value-display" id="viscosityValue">4.0 mPa·s</div>
+                <div class="biological-context" id="viscosityContext">Normal Blood</div>
+            </div>
+            
+            <button id="resetBtn" class="reset-btn" onclick="resetToNormal()">Reset to Normal</button>
+        </div>
+        
+                        <canvas id="flowCanvas" width="1000" height="400"></canvas>
+        
+        <div class="parameters">
+            <h3>Flow Parameters</h3>
+            <div class="parameter">
+                <strong>Maximum Velocity:</strong> <span id="maxVelocityDisplay">0.5 m/s</span>
+            </div>
+            <div class="parameter">
+                <strong>Flow Rate:</strong> <span id="flowRateDisplay">2.1 mL/min</span>
+            </div>
+            <div class="parameter">
+                <strong>Reynolds Number:</strong> <span id="reynoldsDisplay">150</span>
+            </div>
+            <div class="parameter">
+                <strong>Wall Shear Stress:</strong> <span id="shearStressDisplay">2.1 Pa</span>
+            </div>
+            <div class="parameter">
+                <strong>Pressure Drop:</strong> <span id="pressureDropDisplay">50 Pa</span>
+            </div>
+        </div>
+        
+        <div class="equations">
+            <h3>Mathematical Models</h3>
+            <div class="equation">
+                <strong>Poiseuille's Law:</strong><br>
+                v(r) = v_max × (1 - (r/R)²)<br>
+                <em>Parabolic velocity profile in laminar flow</em>
+            </div>
+            <div class="equation">
+                <strong>Flow Rate:</strong><br>
+                Q = (πR⁴ΔP)/(8μL)<br>
+                <em>Volume flow rate through circular pipe</em>
+            </div>
+            <div class="equation">
+                <strong>Reynolds Number:</strong><br>
+                Re = (ρvD)/μ<br>
+                <em>Dimensionless parameter for flow regime</em>
+            </div>
+            <div class="equation">
+                <strong>Wall Shear Stress:</strong><br>
+                τ_w = (4μQ)/(πR³)<br>
+                <em>Shear stress at vessel wall</em>
+            </div>
+        </div>
+        
+        <div class="info">
+            <h3>What you're seeing:</h3>
+            <ul>
+                <li><strong>Horizontal lines:</strong> Flow streamlines showing parallel flow paths</li>
+                <li><strong>Moving dots:</strong> Fluid particles moving at different speeds based on position</li>
+                <li><strong>Red curve:</strong> Velocity profile showing parabolic distribution</li>
+                <li><strong>Color coding:</strong> Red = fast (center), Yellow = fast, Green = medium, Blue = slow (walls)</li>
+                <li><strong>Vessel sizes:</strong> Artery (2.0 mm) > Vein (2.5 mm) > Capillary (0.004 mm)</li>
+            </ul>
+            <p><strong>Poiseuille's Law:</strong> v(r) = v_max × (1 - (r/R)²)</p>
+            <p>This shows why fluid moves fastest at the center and slowest at the walls.</p>
+            
+            <h3>Capillary Flow Comparison:</h3>
+            <div style="overflow-x: auto; margin: 15px 0;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    <thead>
+                        <tr style="background: #f8f9fa;">
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Parameter</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">Low-Flow Capillary<br>(Current Simulation)</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">Average Skeletal Muscle<br>Capillary</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 6px;"><strong>Radius (mm)</strong></td>
+                            <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">0.004</td>
+                            <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">0.004</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 6px;"><strong>ΔP/L (Pa/m)</strong></td>
+                            <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">20,000</td>
+                            <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">600,000</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 6px;"><strong>Max Velocity (mm/s)</strong></td>
+                            <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">0.020</td>
+                            <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">0.60</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 6px;"><strong>Average Velocity (mm/s)</strong></td>
+                            <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">0.010</td>
+                            <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">0.30</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 6px;"><strong>Flow Rate (nL/min)</strong></td>
+                            <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">0.030</td>
+                            <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">0.90</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 6px;"><strong>Reynolds Number</strong></td>
+                            <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">0.00002</td>
+                            <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">0.0006</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 6px;"><strong>Wall Shear Stress (Pa)</strong></td>
+                            <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">0.040 (40 mPa)</td>
+                            <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">1.20</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p style="font-size: 11px; color: #666; margin-top: 10px;">
+                <strong>Notes:</strong> Both have the same radius (~4 μm). Higher ΔP/L in average-flow case boosts velocity ×30, 
+                matching typical in vivo values (~0.3 mm/s average). Reynolds numbers remain extremely low — microcirculation 
+                is always dominated by viscous forces. Wall shear stress reaches physiologic range (0.5–2.0 Pa) in average case.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('flowCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const pressureSlider = document.getElementById('pressure');
+        const radiusSlider = document.getElementById('radius');
+        const viscositySlider = document.getElementById('viscosity');
+        
+        const pressureValue = document.getElementById('pressureValue');
+        const radiusValue = document.getElementById('radiusValue');
+        const viscosityValue = document.getElementById('viscosityValue');
+        
+        const maxVelocityDisplay = document.getElementById('maxVelocityDisplay');
+        const flowRateDisplay = document.getElementById('flowRateDisplay');
+        const reynoldsDisplay = document.getElementById('reynoldsDisplay');
+        const shearStressDisplay = document.getElementById('shearStressDisplay');
+        const pressureDropDisplay = document.getElementById('pressureDropDisplay');
+        
+        const pressureContext = document.getElementById('pressureContext');
+        const radiusContext = document.getElementById('radiusContext');
+        const viscosityContext = document.getElementById('viscosityContext');
+        
+        let time = 0;
+        let animationId;
+        
+        const vessels = {
+            artery: {
+                name: 'Artery',
+                radius: 2.0,
+                pressure: 400,
+                viscosity: 4.0,
+                description: 'High pressure, muscular vessel'
+            },
+            vein: {
+                name: 'Vein',
+                radius: 2.5,
+                pressure: 100,
+                viscosity: 4.0,
+                description: 'Low pressure, thin-walled vessel'
+            },
+            capillary: {
+                name: 'Capillary',
+                radius: 0.004,
+                pressure: 20000,
+                viscosity: 4.0,
+                description: 'Smallest vessels, gas exchange'
+            },
+            stenosis: {
+                name: 'Stenosis',
+                radius: 0.8,
+                pressure: 1000,
+                viscosity: 4.0,
+                description: 'Narrowed vessel, increased pressure'
+            },
+            aneurysm: {
+                name: 'Aneurysm',
+                radius: 4.0,
+                pressure: 300,
+                viscosity: 4.0,
+                description: 'Dilated vessel, reduced velocity'
+            },
+            exercise: {
+                name: 'Exercise',
+                radius: 2.5,
+                pressure: 600,
+                viscosity: 4.0,
+                description: 'Increased cardiac output, vasodilation'
+            },
+            anemia: {
+                name: 'Anemia',
+                radius: 2.0,
+                pressure: 400,
+                viscosity: 2.5,
+                description: 'Reduced hematocrit, lower viscosity'
+            },
+            diabetes: {
+                name: 'Diabetes',
+                radius: 2.0,
+                pressure: 400,
+                viscosity: 6.0,
+                description: 'Increased RBC aggregation, higher viscosity'
+            }
+        };
+        
+        function setVessel(vesselType) {
+            const config = vessels[vesselType];
+            
+            // Update sliders
+            radiusSlider.value = config.radius;
+            pressureSlider.value = config.pressure;
+            viscositySlider.value = config.viscosity;
+            
+            // Update displays
+            radiusValue.textContent = `${config.radius} mm`;
+            pressureValue.textContent = `${config.pressure} Pa/m`;
+            viscosityValue.textContent = `${config.viscosity} mPa·s`;
+            
+            // Update button states
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update simulation and biological context
+            updateSimulation();
+            updateBiologicalContext();
+        }
+        
+        function resetToNormal() {
+            // Reset to normal artery values
+            radiusSlider.value = 2.0;
+            pressureSlider.value = 400;
+            viscositySlider.value = 4.0;
+            
+            // Update displays
+            radiusValue.textContent = '2.0 mm';
+            pressureValue.textContent = '400 Pa/m';
+            viscosityValue.textContent = '4.0 mPa·s';
+            
+            // Update button states
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector('[onclick="setVessel(\'artery\')"]').classList.add('active');
+            
+            // Update simulation and context
+            updateSimulation();
+            updateBiologicalContext();
+        }
+        
+        function updateBiologicalContext() {
+            const pressure = parseFloat(pressureSlider.value);
+            const radius = parseFloat(radiusSlider.value);
+            const viscosity = parseFloat(viscositySlider.value);
+            
+            // Pressure context - check radius first to determine vessel type
+            if (radius < 0.01) {
+                // Capillary - high pressure gradient is normal
+                pressureContext.textContent = 'Capillary';
+            } else if (pressure < 50) {
+                pressureContext.textContent = 'Vein';
+            } else if (pressure < 500) {
+                pressureContext.textContent = 'Normal Artery';
+            } else if (pressure < 1000) {
+                pressureContext.textContent = 'Exercise/Stress';
+            } else {
+                pressureContext.textContent = 'Severe Stenosis';
+            }
+            
+            // Radius context
+            if (radius < 0.01) radiusContext.textContent = 'Capillary';
+            else if (radius < 1.0) radiusContext.textContent = 'Small Vessel';
+            else if (radius < 2.0) radiusContext.textContent = 'Medium Artery';
+            else if (radius < 3.0) radiusContext.textContent = 'Large Artery';
+            else radiusContext.textContent = 'Aneurysm';
+            
+            // Viscosity context
+            if (viscosity < 3.0) viscosityContext.textContent = 'Anemia';
+            else if (viscosity < 4.5) viscosityContext.textContent = 'Normal Blood';
+            else if (viscosity < 6.0) viscosityContext.textContent = 'High Hematocrit';
+            else if (viscosity < 8.0) viscosityContext.textContent = 'Diabetes';
+            else viscosityContext.textContent = 'Polycythemia';
+        }
+        
+        function updateSimulation() {
+            const pressure = parseFloat(pressureSlider.value);
+            const radius = parseFloat(radiusSlider.value) / 1000; // Convert mm to m
+            const viscosity = parseFloat(viscositySlider.value) / 1000; // Convert mPa·s to Pa·s
+            
+            // Update displays
+            pressureValue.textContent = `${pressure} Pa/m`;
+            radiusValue.textContent = `${(radius * 1000).toFixed(1)} mm`;
+            viscosityValue.textContent = `${(viscosity * 1000).toFixed(1)} mPa·s`;
+            
+            // Update biological context
+            updateBiologicalContext();
+            
+            // Calculate flow parameters using standard Hagen-Poiseuille equation
+            const maxVelocity = (radius * radius * pressure) / (4 * viscosity);
+            const flowRate = (Math.PI * Math.pow(radius, 4) * pressure) / (8 * viscosity);
+            const reynolds = (1000 * maxVelocity * 2 * radius) / viscosity; // ρ = 1000 kg/m³
+            const wallShearStress = (4 * viscosity * flowRate) / (Math.PI * Math.pow(radius, 3));
+            const pressureDrop = pressure * 0.1; // 10cm vessel length
+            
+            // Update parameter displays with appropriate units
+            const radius_mm = radius * 1000; // Convert to mm for display logic
+            
+            // Use appropriate units based on vessel size
+            if (radius_mm < 0.01) {
+                // Capillary - use mm/s and μL/min with more precision
+                maxVelocityDisplay.textContent = `${(maxVelocity * 1000).toFixed(3)} mm/s`;
+                const capillaryFlowRate = flowRate * 1000 * 60 * 1000; // Convert to μL/min
+                if (capillaryFlowRate < 0.000000001) {
+                    flowRateDisplay.textContent = `${(capillaryFlowRate * 1000000000).toFixed(3)} fL/min`;
+                } else if (capillaryFlowRate < 0.000001) {
+                    flowRateDisplay.textContent = `${(capillaryFlowRate * 1000000).toFixed(3)} pL/min`;
+                } else if (capillaryFlowRate < 0.001) {
+                    flowRateDisplay.textContent = `${(capillaryFlowRate * 1000).toFixed(3)} nL/min`;
+                } else {
+                    flowRateDisplay.textContent = `${capillaryFlowRate.toFixed(3)} μL/min`;
+                }
+            } else {
+                // Larger vessels - use cm/s and mL/min
+                maxVelocityDisplay.textContent = `${(maxVelocity * 100).toFixed(1)} cm/s`;
+                const largeVesselFlowRate = flowRate * 1000 * 60; // Convert to mL/min
+                if (largeVesselFlowRate < 0.1) {
+                    flowRateDisplay.textContent = `${(largeVesselFlowRate * 1000).toFixed(1)} μL/min`;
+                } else {
+                    flowRateDisplay.textContent = `${largeVesselFlowRate.toFixed(1)} mL/min`;
+                }
+            }
+            
+            reynoldsDisplay.textContent = Math.max(0.001, Math.min(2000, reynolds)).toFixed(3);
+            shearStressDisplay.textContent = `${(wallShearStress * 1000).toFixed(1)} mPa`;
+            pressureDropDisplay.textContent = `${pressureDrop.toFixed(0)} Pa`;
+            
+            drawFlow(radius, maxVelocity);
+        }
+        
+        function drawFlow(radius, maxVelocity) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerY = canvas.height / 2;
+            const vesselLength = canvas.width - 250;
+            const startX = 50;
+            const pixelRadius = Math.max(30, radius * 50000);
+            
+            // Draw vessel walls
+            ctx.fillStyle = '#34495e';
+            ctx.fillRect(startX, centerY - pixelRadius - 5, vesselLength, 5);
+            ctx.fillRect(startX, centerY + pixelRadius, vesselLength, 5);
+            
+            // Draw velocity profile
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            for (let i = 0; i <= 20; i++) {
+                const y = centerY - pixelRadius + (2 * pixelRadius * i / 20);
+                const distanceFromCenter = Math.abs(y - centerY);
+                const normalizedDistance = distanceFromCenter / pixelRadius;
+                
+                // Parabolic velocity profile
+                const velocityFactor = 1 - (normalizedDistance * normalizedDistance);
+                const profileX = startX + vesselLength + 30 + velocityFactor * 60;
+                
+                if (i === 0) {
+                    ctx.moveTo(profileX, y);
+                } else {
+                    ctx.lineTo(profileX, y);
+                }
+            }
+            ctx.stroke();
+            
+            // Draw velocity profile axis
+            ctx.strokeStyle = '#34495e';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(startX + vesselLength + 30, centerY - pixelRadius);
+            ctx.lineTo(startX + vesselLength + 30, centerY + pixelRadius);
+            ctx.moveTo(startX + vesselLength + 30, centerY + pixelRadius);
+            ctx.lineTo(startX + vesselLength + 100, centerY + pixelRadius);
+            ctx.stroke();
+            
+            // Draw velocity profile labels
+            ctx.fillStyle = '#34495e';
+            ctx.font = '12px Arial';
+            ctx.fillText('Velocity Profile', startX + vesselLength + 35, centerY - pixelRadius - 10);
+            ctx.fillText('v_max', startX + vesselLength + 95, centerY - pixelRadius + 15);
+            ctx.fillText('0', startX + vesselLength + 35, centerY + pixelRadius + 15);
+            
+            // Draw streamlines
+            const numStreamlines = 12;
+            for (let i = 0; i < numStreamlines; i++) {
+                const streamlineY = centerY - pixelRadius + 15 + (2 * pixelRadius - 30) * i / (numStreamlines - 1);
+                const distanceFromCenter = Math.abs(streamlineY - centerY);
+                const normalizedDistance = distanceFromCenter / pixelRadius;
+                const velocityFactor = 1 - (normalizedDistance * normalizedDistance);
+                
+                // Color based on velocity: Red (center, fast) → Yellow → Green → Blue (outside, slow)
+                let hue, saturation, lightness;
+                if (velocityFactor > 0.75) {
+                    // Red for fastest flow (center)
+                    hue = 0;
+                    saturation = 80;
+                    lightness = 50;
+                } else if (velocityFactor > 0.5) {
+                    // Yellow for fast flow
+                    hue = 60;
+                    saturation = 80;
+                    lightness = 50;
+                } else if (velocityFactor > 0.25) {
+                    // Green for medium flow
+                    hue = 120;
+                    saturation = 70;
+                    lightness = 45;
+                } else {
+                    // Blue for slowest flow (near walls)
+                    hue = 240;
+                    saturation = 70;
+                    lightness = 40;
+                }
+                
+                ctx.strokeStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(startX, streamlineY);
+                ctx.lineTo(startX + vesselLength, streamlineY);
+                ctx.stroke();
+            }
+            
+            // Draw moving particles - many more to show clear forward flow
+            const numParticles = 25;
+            for (let i = 0; i < numParticles; i++) {
+                const particleY = centerY - pixelRadius + 15 + (2 * pixelRadius - 30) * i / (numParticles - 1);
+                const distanceFromCenter = Math.abs(particleY - centerY);
+                const normalizedDistance = distanceFromCenter / pixelRadius;
+                const velocityFactor = 1 - (normalizedDistance * normalizedDistance);
+                
+                const particleSpeed = maxVelocity * 50 * velocityFactor;
+                const x = (startX + (time * particleSpeed / 100)) % (vesselLength + 20);
+                
+                if (x >= startX && x <= startX + vesselLength) {
+                    // Color particles to match streamlines: Red (center, fast) → Yellow → Green → Blue (outside, slow)
+                    let hue, saturation, lightness;
+                    if (velocityFactor > 0.75) {
+                        // Red for fastest flow (center)
+                        hue = 0;
+                        saturation = 80;
+                        lightness = 60;
+                    } else if (velocityFactor > 0.5) {
+                        // Yellow for fast flow
+                        hue = 60;
+                        saturation = 80;
+                        lightness = 60;
+                    } else if (velocityFactor > 0.25) {
+                        // Green for medium flow
+                        hue = 120;
+                        saturation = 70;
+                        lightness = 55;
+                    } else {
+                        // Blue for slowest flow (near walls)
+                        hue = 240;
+                        saturation = 70;
+                        lightness = 50;
+                    }
+                    
+                    ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                    ctx.beginPath();
+                    ctx.arc(x, particleY, 3, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+            
+            // Draw pressure gradient
+            ctx.fillStyle = '#34495e';
+            ctx.font = '14px Arial';
+            ctx.fillText('High P', startX - 30, centerY - pixelRadius - 20);
+            ctx.fillText('Low P', startX + vesselLength + 10, centerY - pixelRadius - 20);
+            
+            // Pressure gradient arrow
+            ctx.strokeStyle = '#34495e';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(startX, centerY - pixelRadius - 40);
+            ctx.lineTo(startX + vesselLength, centerY - pixelRadius - 40);
+            ctx.stroke();
+            
+            // Arrow head
+            ctx.beginPath();
+            ctx.moveTo(startX + vesselLength - 10, centerY - pixelRadius - 45);
+            ctx.lineTo(startX + vesselLength, centerY - pixelRadius - 40);
+            ctx.lineTo(startX + vesselLength - 10, centerY - pixelRadius - 35);
+            ctx.stroke();
+        }
+        
+        function animate() {
+            time += 0.5;
+            updateSimulation();
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // Event listeners
+        pressureSlider.addEventListener('input', updateSimulation);
+        radiusSlider.addEventListener('input', updateSimulation);
+        viscositySlider.addEventListener('input', updateSimulation);
+        
+        // Initialize biological context
+        updateBiologicalContext();
+        
+        // Start animation
+        animate();
+    </script>
+</body>
+</html> 
