@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="../bioflowsim.png">
-    <title>Poiseuille Flow</title>
+    <title>Working Poiseuille Flow</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -159,6 +159,108 @@
             background: linear-gradient(135deg, #229954, #1e8449);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2em;
+                margin-bottom: 20px;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 10px;
+            }
+            
+            .control-group {
+                margin-bottom: 10px;
+            }
+            
+            .scenario-buttons {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .scenario-btn {
+                padding: 12px 16px;
+                font-size: 14px;
+                text-align: center;
+            }
+            
+            canvas {
+                max-width: 100%;
+                height: auto;
+            }
+            
+            .info {
+                padding: 12px;
+                margin-top: 15px;
+            }
+            
+            .info h3 {
+                font-size: 1.2em;
+            }
+            
+            .info ul {
+                font-size: 0.9em;
+            }
+            
+            .equations {
+                font-size: 12px;
+                padding: 10px;
+            }
+            
+            .parameters {
+                padding: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                margin: 5px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .scenario-btn {
+                padding: 10px 14px;
+                font-size: 13px;
+            }
+            
+            .info {
+                padding: 10px;
+            }
+            
+            .info h3 {
+                font-size: 1.1em;
+            }
+            
+            .info ul {
+                font-size: 0.85em;
+            }
+            
+            .equations {
+                font-size: 11px;
+                padding: 8px;
+            }
+            
+            .parameters {
+                padding: 10px;
+            }
         }
     </style>
 </head>
