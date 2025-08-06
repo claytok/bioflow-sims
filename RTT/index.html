@@ -223,6 +223,128 @@
             gap: 8px;
             font-size: 12px;
         }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                margin: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .subtitle {
+                font-size: 1em;
+            }
+            
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .simulation-area {
+                padding: 15px;
+            }
+            
+            #canvas {
+                height: 400px;
+            }
+            
+            .controls {
+                padding: 20px;
+            }
+            
+            .control-group {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            
+            .control-group h3 {
+                font-size: 1em;
+            }
+            
+            .button-group {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .scenario-buttons {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .scenario-btn {
+                padding: 10px 14px;
+                font-size: 13px;
+            }
+            
+            .legend {
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px;
+            }
+            
+            .legend-item {
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 5px;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .subtitle {
+                font-size: 0.9em;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+            
+            #canvas {
+                height: 300px;
+            }
+            
+            .controls {
+                padding: 15px;
+            }
+            
+            .control-group {
+                padding: 12px;
+            }
+            
+            .scenario-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+            
+            .legend {
+                padding: 8px;
+            }
+            
+            .legend-item {
+                font-size: 10px;
+            }
+        }
         
         .legend-color {
             width: 16px;
