@@ -99,6 +99,107 @@
             font-weight: bold;
             color: #2c3e50;
             font-size: 1.2em;
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .subtitle {
+                font-size: 1em;
+            }
+            
+            .quick-nav {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .nav-btn {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+            
+            .math-section {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .section-title {
+                font-size: 1.5em;
+            }
+            
+            .concept-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .concept-box {
+                padding: 15px;
+            }
+            
+            .concept-title {
+                font-size: 1.1em;
+            }
+            
+            .formula-large {
+                font-size: 1.1em;
+                line-height: 1.4;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .subtitle {
+                font-size: 0.9em;
+            }
+            
+            .math-section {
+                padding: 15px;
+            }
+            
+            .section-title {
+                font-size: 1.3em;
+            }
+            
+            .concept-box {
+                padding: 12px;
+            }
+            
+            .concept-title {
+                font-size: 1em;
+            }
+            
+            .formula-large {
+                font-size: 1em;
+            }
+            
+            .gradient-demo-grid {
+                grid-template-columns: 1fr !important;
+                gap: 15px !important;
+            }
+        }
             margin-bottom: 10px;
         }
         
@@ -356,7 +457,7 @@
                     <span id="concValue">5</span> mg/L
                 </div>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;" class="gradient-demo-grid">
                     <div style="text-align: center;">
                         <canvas id="gradientCanvas" width="300" height="250" style="border: 2px solid #3498db; border-radius: 10px; background: white;"></canvas>
                         <div style="font-size: 12px; margin-top: 10px; color: #666;">
